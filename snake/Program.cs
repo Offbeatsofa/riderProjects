@@ -22,8 +22,12 @@ namespace Snake
             int appleSpawnY = rand.Next(0, height);
             return new int[] { snakeSpawnX, snakeSpawnY, appleSpawnX, appleSpawnY };
         }
-        
-        
+
+        static void Draw()
+        {
+            Console.CursorVisible = false;;
+            Console.Clear();
+            
+        }
     }
-    
 }
