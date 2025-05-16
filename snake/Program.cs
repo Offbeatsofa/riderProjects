@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Xml.Serialization;
 
 namespace SnakeGame
 {
@@ -23,7 +24,6 @@ namespace SnakeGame
             };
             
             var snake = new List<Segment> { segment };
-            
             while (true)
             {
                 snake.Insert(0, Move(snake[0]));
@@ -36,8 +36,7 @@ namespace SnakeGame
                 
                 apple = EatApple(apple, snake[0]);
                 snake.RemoveAt(_fruitEaten + 1);
-                Draw(apple, snake);
-
+                
                 if (Console.KeyAvailable)
                 {
                     if (Console.ReadKey().Key == ConsoleKey.Escape)
@@ -46,6 +45,38 @@ namespace SnakeGame
                     }
                 }
                 
+                if ((snake[0].SnakeX > Console.WindowWidth - 5 || snake[0].SnakeX < 4) || (snake[0].SnakeY > Console.WindowHeight - 4 || snake[0].SnakeY < 3) || snake.Exists(a => a.SnakeX == snake[0].SnakeX && a.SnakeY == snake[0].SnakeY && a != snake[0]))
+                {
+                    // Console.Clear();
+                    Console.SetCursorPosition((Console.WindowWidth / 2) - 4, (Console.WindowHeight / 2) - 2);
+                    Console.Write("GAME OVER");
+                    Console.SetCursorPosition((Console.WindowWidth / 2) - 4, (Console.WindowHeight / 2));
+                    Console.Write($"Score: " + _fruitEaten);
+                    Console.SetCursorPosition((Console.WindowWidth / 2) - 13, (Console.WindowHeight / 2) + 2);
+                    Console.Write("Press enter to play again.");
+                    Thread.Sleep(100);
+                    Console.ReadKey();
+                    if (Console.ReadKey().Key == ConsoleKey.Enter)
+                    {
+                        _fruitEaten = 0;
+                        segment = new Segment
+                        {
+                            SnakeX = _rand.Next(4, Console.WindowWidth - 4),
+                            SnakeY = _rand.Next(4, Console.WindowHeight - 4)
+                        };
+                        snake = new List<Segment> { segment };
+                        apple = new Apple
+                        {
+                            AppleX = _rand.Next(4, Console.WindowWidth - 4),
+                            AppleY = _rand.Next(4, Console.WindowHeight - 4)
+                        };
+                        continue;   
+                    }
+                    Console.SetCursorPosition(0, Console.WindowHeight);
+                    break;
+                }
+                
+                Draw(apple, snake);
                 Thread.Sleep(snake[0].Direction is 'l' or 'r' ? 25 : 50);
             }
         }
@@ -56,31 +87,34 @@ namespace SnakeGame
             public int SnakeY;
             public char Direction;
         }
-
         private class Apple
         {
             public int AppleX;
             public int AppleY;
         }
-
         private static Segment Move(Segment moveSegment)
         {
             var segment = new Segment { Direction = moveSegment.Direction, SnakeX = moveSegment.SnakeX, SnakeY = moveSegment.SnakeY };
             
             if (Console.KeyAvailable)
             {
-                switch (Console.ReadKey().Key)
+                switch (Console.ReadKey().Key, segment.Direction)
                 {
-                    case ConsoleKey.E:
+                    case (ConsoleKey.E, 'd'):
+                    case (ConsoleKey.D, 'u'):
+                    case (ConsoleKey.S, 'r'):
+                    case (ConsoleKey.F, 'l'):
+                        break;
+                    case (ConsoleKey.E, _):
                         segment.Direction = 'u';
                         break;
-                    case ConsoleKey.D:
+                    case (ConsoleKey.D, _):
                         segment.Direction = 'd';
                         break;
-                    case ConsoleKey.S:
+                    case (ConsoleKey.S, _):
                         segment.Direction = 'l';
                         break;
-                    case ConsoleKey.F:
+                    case (ConsoleKey.F, _):
                         segment.Direction = 'r';
                         break;
                     default:
@@ -129,7 +163,7 @@ namespace SnakeGame
                         Console.Write("🞂");
                         break;
                     default:
-                        Console.Write("fuck you");
+                        Console.Write("⬥");
                         break;
                 }
             }
